@@ -1,6 +1,6 @@
 import requests
 import json
-from data import d_currency
+from data import d_currency, d_massages
 from config import ACCESS_KEY
 
 
@@ -12,19 +12,24 @@ class CheckInput:
     @staticmethod
     def get_price(words):
         if len(words) != 3:
-            raise UserError("необходимо указать 3 параметра")
+            raise UserError("для конвертации валюты\
+\n необходимо указать 3 параметра:\
+\n ")
         val_from, val_to, count = words
 
         if val_from not in d_currency.keys():
             raise UserError(f"'{val_from}' нет в списке допустимых валют\n\
-/currency - список возможных валют")
+/currency - список возможных валют\
+\n {d_massages['back']}")
         if val_to not in d_currency.keys():
             raise UserError(f"'{val_to}' нет в списке допустимых валют\n\
-/currency - список возможных валют")
+/currency - список возможных валют\
+\n {d_massages['back']}")
         try:
             count = float(count)
         except ValueError:
-            raise UserError(f"'{count}' кол-во валюты д.б. числом")
+            raise UserError(f"'{count}' кол-во валюты д.б. числом\
+\n {d_massages['back']}")
         else:
             count = float(count)
 

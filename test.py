@@ -1,12 +1,9 @@
 import telebot
-from utills import CheckInput
-from utills import UserError
-from config import d_currency, TOKEN
-from data import data_now, weak_weather_fc
+from utills import CheckInput, UserError
+from config import TOKEN
+from data import data_now, weak_weather_fc, d_currency, d_massages
 
 bot = telebot.TeleBot(TOKEN)
-
-words = ["неделя", "сегодня", "/weather"]
 
 
 class Start:
@@ -24,14 +21,17 @@ class Start:
     def now(cls):
         @bot.message_handler(commands=["start", "help"])
         def info(message: telebot.types.Message):
-            bot.reply_to(message, "\n/exchange - конвертировать валюту\
-\n/weather - погода в г. Москва")
+            bot.reply_to(message, d_massages["start"])
+
+        @bot.message_handler(commands=['back'])
+        def back_to_start_menu(message: telebot.types.Message):
+            Start.weather = False
+            Start.exchange = False
+            bot.send_message(message.chat.id, d_massages["start"])
 
         @bot.message_handler(commands=["exchange"])
         def exchange(message: telebot.types.Message):
-            bot.send_message(message.chat.id, "для конвертации валюты введите данные в следующем формате\n \
-<валюта 'из'> <валюта 'в'> <кол-во>) \
-\n/currencies - список допустимых валют")
+            bot.send_message(message.chat.id, "\n".join([d_massages["exchange"], d_massages["back"]]))
             Start.weather = False
             Start.exchange = True
 
@@ -41,7 +41,7 @@ class Start:
                 txt = "список допустимых валют:\n"
                 for k in d_currency:
                     txt += f"{k}\n"
-                bot.reply_to(message, txt)
+                bot.reply_to(message, "\n".join([txt, d_massages['back']]))
                 Start.weather = False
                 Start.exchange = True
 
@@ -49,24 +49,25 @@ class Start:
 
         @bot.message_handler(commands=['weather'])
         def weather(message: telebot.types.Message):
-            bot.reply_to(message, "выберите из списка:<сегодня>, <неделя>")
+            bot.reply_to(message, "\n".join([d_massages["weather_intro"], d_massages["back"]]))
             Start.exchange = False
             Start.weather = True
 
         @bot.message_handler(content_types=['text'])
-        def weather_words(message: telebot.types.Message):
+        def text_operations(message: telebot.types.Message):
             if Start.weather:
-                if message.text == "сегодня":
-                    bot.send_message(message.chat.id, data_now)
+                if message.text.lower() not in ["сегодня", "неделя"]:
+                    bot.reply_to(message, f'данные введены не верно\n{d_massages["weather_intro"]}\
+\n{d_massages["back"]}')
+                else:
+                    if message.text == "сегодня":
+                        bot.send_message(message.chat.id, data_now)
+                    elif message.text == "неделя":
+                        bot.send_message(message.chat.id, weak_weather_fc)
                     Start.weather = False
-                elif message.text == "неделя":
-                    bot.send_message(message.chat.id, weak_weather_fc)
-                    Start.weather = False
+                    bot.send_message(message.chat.id, d_massages["start"])
 
-        @bot.message_handler(content_types=['text'])
-        def convert(message: telebot.types.Message):
-            possible_commands = ["/start", "/back", "/currencies"]
-            if Start.exchange and message.text not in possible_commands:
+            if Start.exchange:
                 try:
                     words = message.text.lower().split()
                     txt = CheckInput.get_price(words)
@@ -77,6 +78,8 @@ class Start:
                 else:
                     bot.send_message(message.chat.id, txt)
                     Start.exchange = False
+                    bot.send_message(message.chat.id, d_massages["start"])
+
 
         bot.polling(none_stop=True)
 
