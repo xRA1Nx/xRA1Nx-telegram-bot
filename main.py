@@ -1,8 +1,9 @@
 import telebot
-from utills import CheckInput
-from utills import UserError
-from config import d_currency, TOKEN
-from data import data_now, weak_weather_fc
+from utills import CheckInput, UserError
+from config import TOKEN
+from data import data_now, weak_weather_fc, d_currency
+
+
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -17,6 +18,8 @@ class Start:
 \n/currencies - список допустимых валют\
 \n/weather_now - погода в г. Москва сейчас\
 \n/weather_weak - погода в г. Москва на неделю")
+
+
 
         @bot.message_handler(commands=['currencies'])
         def currencies(message: telebot.types.Message):
@@ -33,6 +36,7 @@ class Start:
         def weather_weak(message: telebot.types.Message):
             bot.send_message(message.chat.id, weak_weather_fc)
 
+
         @bot.message_handler(content_types=['text'])
         def convert(message: telebot.types.Message):
             try:
@@ -46,12 +50,21 @@ class Start:
             else:
                 bot.send_message(message.chat.id, txt)
 
+
+
+
+
+
         bot.polling(none_stop=True)
 
 
 if __name__ == "__main__":
     Start.now()
 
+
 # @bot.message_handler()
 # def echo(message):
 #     bot.send_message(message.chat.id, "привет")
+
+
+

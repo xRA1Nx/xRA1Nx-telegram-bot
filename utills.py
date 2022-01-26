@@ -1,6 +1,7 @@
 import requests
 import json
-from config import d_currency
+from data import d_currency
+from config import ACCESS_KEY
 
 
 class UserError(Exception):
@@ -27,13 +28,12 @@ class CheckInput:
         else:
             count = float(count)
 
-        r = requests.get("http://api.exchangeratesapi.io/v1/latest?access_key=a6f4046ceb91a5e7d1566e72e860470d")
+        r = requests.get(f"http://api.exchangeratesapi.io/v1/latest?access_key={ACCESS_KEY}")
         data = json.loads(r.content)["rates"]
         if val_from == val_to:
             res = count
         else:
             res = round(
-                float(data[d_currency[val_to]]) / float(data[d_currency[val_from]]) * float(
-                    data[d_currency[val_to]]) * count, 2)
+                float(data[d_currency[val_to]]) / float(data[d_currency[val_from]]) * count, 2)
         txt = f"{count} {val_from} = {res} {val_to}"
         return txt
